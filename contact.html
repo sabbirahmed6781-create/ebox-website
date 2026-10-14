@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Contact the Ebox support team for questions, feedback, and assistance.">
+  <meta name="theme-color" content="#07111f">
+  <title>Contact Ebox</title>
+  <link rel="icon" type="image/png" href="assets/images/ebox.png">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #07111f;
+      color: #e8eef8;
+      line-height: 1.8;
+    }
+    header { padding: 22px; border-bottom: 1px solid #26344a; }
+    nav, main, footer { max-width: 760px; margin: auto; }
+    a { color: #80ddff; }
+    main { padding: 40px 22px 60px; }
+    h1 { font-size: 38px; }
+    h2 { color: #80ddff; }
+    p { color: #c5d0e0; }
+    .panel {
+      background: #101d30;
+      border: 1px solid #26344a;
+      border-radius: 14px;
+      padding: 22px;
+      margin-top: 25px;
+    }
+    .email {
+      display: inline-block;
+      padding: 12px 18px;
+      background: #16b9dc;
+      color: #07111f;
+      border-radius: 9px;
+      font-weight: bold;
+      text-decoration: none;
+      overflow-wrap: anywhere;
+    }
+    footer {
+      border-top: 1px solid #26344a;
+      padding: 24px 22px;
+      color: #9eacc1;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav><a href="./">← Back to Ebox Home</a></nav>
+  </header>
+
+  <main>
+    <h1>Contact Us</h1>
+    <p>
+      Have a question about Ebox, need help with the application, or want
+      to share feedback? We would be happy to hear from you.
+    </p>
+
+    <div class="panel">
+      <h2>Ebox Support</h2>
+      <p><strong>Email:</strong> sabbirahmed6781@gmail.com</p>
+      <p>
+        Please describe your question or issue clearly. If you are reporting
+        a playback problem, include the device model and a description of
+        the issue. Avoid sending passwords or other sensitive information.
+      </p>
+      <a class="email" href="mailto:sabbirahmed6781@gmail.com?subject=Ebox%20Support">Email Ebox Support</a>
+    </div>
+
+    <h2>Useful Links</h2>
+    <p><a href="about.html">About Ebox</a></p>
+    <p><a href="privacy.html">Privacy Policy</a></p>
+  </main>
+
+  <footer>
+    © <span id="year"></span> Ebox. All rights reserved.
+  </footer>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

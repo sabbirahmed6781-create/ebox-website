@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Learn about Ebox, an Android entertainment application for live TV, movies, and series.">
+  <meta name="theme-color" content="#07111f">
+  <title>About Ebox</title>
+  <link rel="icon" type="image/png" href="assets/images/ebox.png">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #07111f;
+      color: #e8eef8;
+      line-height: 1.8;
+    }
+    header { padding: 22px; border-bottom: 1px solid #26344a; }
+    nav, main, footer { max-width: 850px; margin: auto; }
+    a { color: #80ddff; text-decoration: none; }
+    main { padding: 38px 22px 55px; }
+    h1 { font-size: 38px; }
+    h2 { color: #80ddff; margin-top: 30px; }
+    p, li { color: #c5d0e0; }
+    .logo { width: 78px; height: 78px; object-fit: contain; }
+    .panel {
+      background: #101d30;
+      border: 1px solid #26344a;
+      border-radius: 14px;
+      padding: 20px;
+      margin: 22px 0;
+    }
+    .download {
+      display: inline-block;
+      padding: 12px 20px;
+      background: #16b9dc;
+      color: #07111f;
+      border-radius: 9px;
+      font-weight: bold;
+    }
+    footer {
+      border-top: 1px solid #26344a;
+      padding: 24px 22px;
+      color: #9eacc1;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav><a href="./">← Back to Ebox Home</a></nav>
+  </header>
+
+  <main>
+    <img class="logo" src="assets/images/ebox.png" alt="Ebox logo">
+    <h1>About Ebox</h1>
+
+    <p>
+      Ebox is an Android entertainment application designed to bring
+      different types of entertainment content together in one place.
+    </p>
+
+    <div class="panel">
+      <h2>What can you explore?</h2>
+      <ul>
+        <li><strong>Live TV:</strong> Access live television streams available through the app.</li>
+        <li><strong>Movies:</strong> Explore movie content made available in the application.</li>
+        <li><strong>Series:</strong> Browse series content available through the app.</li>
+      </ul>
+    </div>
+
+    <h2>Our Goal</h2>
+    <p>
+      Our goal is to provide a convenient and user-friendly entertainment
+      experience. We aim to make the application straightforward to browse
+      and easy to use on supported Android devices.
+    </p>
+
+    <h2>Content and Availability</h2>
+    <p>
+      Content availability may depend on streaming sources, internet
+      connectivity, device compatibility, and the availability of external
+      services. Ebox does not guarantee that every stream will always be
+      available.
+    </p>
+    <p>
+      Users should access content only where they have the appropriate
+      authorization. Content owners and third-party providers may have
+      their own terms and restrictions.
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      Questions or feedback? Email us at
+      <a href="mailto:sabbirahmed6781@gmail.com">sabbirahmed6781@gmail.com</a>.
+    </p>
+
+    <p><a class="download" href="https://github.com/sabbirahmed6781-create/ebox-website/releases/latest/download/app-release.apk">Download Ebox for Android</a></p>
+
+    <p><a href="privacy.html">Read our Privacy Policy</a></p>
+  </main>
+
+  <footer>
+    © <span id="year"></span> Ebox. All rights reserved.
+  </footer>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
