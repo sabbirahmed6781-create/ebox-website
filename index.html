@@ -390,6 +390,75 @@
         text-align: center;
       }
     }
+  
+    .content-section {
+      padding: 65px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .content-panel {
+      background: rgba(16,23,39,.82);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: clamp(22px, 4vw, 42px);
+    }
+
+    .content-panel h2 {
+      font-size: clamp(25px, 4vw, 34px);
+      line-height: 1.25;
+      margin-bottom: 18px;
+    }
+
+    .content-panel h3 {
+      font-size: 18px;
+      margin: 22px 0 7px;
+    }
+
+    .content-panel p,
+    .content-panel li {
+      color: var(--muted);
+    }
+
+    .content-panel p + p {
+      margin-top: 13px;
+    }
+
+    .content-panel ul,
+    .content-panel ol {
+      padding-left: 23px;
+      margin-top: 12px;
+    }
+
+    .faq-item {
+      padding: 17px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .faq-item:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .faq-item h3 {
+      margin: 0 0 7px;
+    }
+
+    .content-panel a.text-link {
+      color: var(--cyan);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    @media (max-width: 600px) {
+      .content-section {
+        padding: 42px 0;
+      }
+
+      .content-panel {
+        border-radius: 15px;
+      }
+    }
+
   </style>
 </head>
 
@@ -478,6 +547,137 @@
               straightforward website.
             </p>
           </article>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="content-section" id="about-ebox">
+      <div class="container">
+        <div class="content-panel">
+          <h2>About Ebox</h2>
+          <p>
+            Ebox is an Android entertainment application designed to bring
+            available entertainment options together in one place. The app
+            includes sections for Live TV, Movies, and Series.
+          </p>
+          <p>
+            The available content may depend on the source, internet
+            connection, device compatibility, and service availability.
+            Users should access content only when they have the right to
+            view it in their region.
+          </p>
+          <p>
+            This website provides information about Ebox and links to the
+            latest available Android APK release.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section" id="ebox-features">
+      <div class="container">
+        <div class="content-panel">
+          <h2>Ebox Features</h2>
+
+          <h3>Live TV</h3>
+          <p>
+            Explore the live television options available in the app.
+            Playback depends on stream availability and your internet
+            connection.
+          </p>
+
+          <h3>Movies</h3>
+          <p>
+            Browse the movie options available through Ebox. Availability
+            may vary by source and over time.
+          </p>
+
+          <h3>Series</h3>
+          <p>
+            Find the series content available in the app. Individual
+            titles and playback availability may change.
+          </p>
+
+          <h3>Android access</h3>
+          <p>
+            Download the Android installation package from the official
+            Ebox release link on this website.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section" id="install-guide">
+      <div class="container">
+        <div class="content-panel">
+          <h2>How to Install Ebox on Android</h2>
+          <ol>
+            <li>Tap the Download Ebox APK button on this website.</li>
+            <li>Open the official release and download the APK file.</li>
+            <li>Open the downloaded file on your compatible Android device.</li>
+            <li>
+              If Android asks for permission to install apps from that
+              source, review the setting and allow it only if you trust
+              the file and its source.
+            </li>
+            <li>Follow the installation instructions shown by Android.</li>
+          </ol>
+          <p>
+            Menu names and installation steps can vary by Android version.
+            Only install APK files from sources you trust.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section" id="ebox-faq">
+      <div class="container">
+        <div class="content-panel">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <h3>What is Ebox?</h3>
+            <p>
+              Ebox is an Android entertainment app with Live TV, Movies,
+              and Series sections.
+            </p>
+          </div>
+
+          <div class="faq-item">
+            <h3>How do I download Ebox?</h3>
+            <p>
+              Use the download button on this website to access the latest
+              available APK release.
+            </p>
+          </div>
+
+          <div class="faq-item">
+            <h3>Why might a stream not play?</h3>
+            <p>
+              Playback can be affected by your internet connection,
+              device compatibility, or the availability of the content
+              source.
+            </p>
+          </div>
+
+          <div class="faq-item">
+            <h3>Is Ebox available for every device?</h3>
+            <p>
+              Ebox is provided as an Android APK. Compatibility depends
+              on the device and the requirements of the current release.
+            </p>
+          </div>
+
+          <div class="faq-item">
+            <h3>Where can I get support?</h3>
+            <p>
+              Visit the <a class="text-link" href="contact.html">Contact
+              page</a> to reach Ebox support. You can also review our
+              <a class="text-link" href="privacy.html">Privacy Policy</a>
+              to learn about our stated data practices.
+            </p>
+          </div>
         </div>
       </div>
     </section>
