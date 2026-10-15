@@ -334,6 +334,29 @@
       color: white;
     }
 
+    .footer-brand p {
+      margin: 5px 0;
+    }
+
+    .developer-credit {
+      font-size: 12px;
+      color: #9eacc1;
+    }
+
+    .developer-credit a {
+      color: #80ddff;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .developer-credit a:hover {
+      color: #ffffff;
+    }
+
+    .developer-role {
+      color: #8995ad;
+    }
+
     @media (max-width: 720px) {
       .nav {
         min-height: 68px;
@@ -721,7 +744,10 @@
 
   <footer>
     <div class="container footer-inner">
-      <p>© <span id="year"></span> Ebox. All rights reserved.</p>
+      <div class="footer-brand">
+        <p>© <span id="year"></span> Ebox. All rights reserved.</p>
+        <p class="developer-credit">Crafted with care by <a href="about.html#developer">Sabbir Ahmed</a> <span class="developer-role">· Founder &amp; Developer</span></p>
+      </div>
 
       <div class="footer-links">
         <a href="about.html">About Ebox</a>

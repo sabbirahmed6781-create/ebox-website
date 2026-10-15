@@ -39,6 +39,52 @@
       border-radius: 9px;
       font-weight: bold;
     }
+    .developer-card {
+      position: relative;
+      overflow: hidden;
+      margin: 30px 0;
+      padding: 28px;
+      border: 1px solid rgba(128, 221, 255, .28);
+      border-radius: 18px;
+      background: linear-gradient(135deg, #12263e, #101d30 60%, #102a3b);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, .18);
+    }
+    .developer-label {
+      display: inline-block;
+      padding: 5px 11px;
+      border: 1px solid rgba(128, 221, 255, .3);
+      border-radius: 20px;
+      color: #80ddff;
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+    .developer-card h2 {
+      margin: 16px 0 4px;
+      color: #f4f8ff;
+      font-size: 28px;
+    }
+    .developer-title {
+      margin-top: 0;
+      color: #80ddff;
+      font-weight: bold;
+    }
+    .developer-card p {
+      margin-bottom: 0;
+    }
+    .developer-signature {
+      display: inline-block;
+      margin-top: 18px;
+      color: #80ddff;
+      font-size: 13px;
+      font-weight: bold;
+    }
+    @media (max-width: 600px) {
+      .developer-card { padding: 22px; }
+      .developer-card h2 { font-size: 24px; }
+    }
+
     footer {
       border-top: 1px solid #26344a;
       padding: 24px 22px;
@@ -76,6 +122,17 @@
       experience. We aim to make the application straightforward to browse
       and easy to use on supported Android devices.
     </p>
+
+    <section class="developer-card" id="developer" aria-labelledby="developer-heading">
+      <span class="developer-label">Meet the Developer</span>
+      <h2 id="developer-heading">Sabbir Ahmed</h2>
+      <p class="developer-title">Founder &amp; Developer of Ebox</p>
+      <p>
+        Ebox is built with a focus on a simple, convenient, and enjoyable
+        entertainment experience. Thank you for being part of the Ebox journey.
+      </p>
+      <span class="developer-signature">Building Ebox with passion ✦</span>
+    </section>
 
     <h2>Content and Availability</h2>
     <p>
