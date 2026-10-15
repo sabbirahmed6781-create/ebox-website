@@ -482,10 +482,141 @@
       }
     }
 
-  </style>
+  
+/* Ebox shared Light/Dark theme */
+html {
+  color-scheme: dark;
+}
+html[data-theme="light"] {
+  color-scheme: light;
+}
+html[data-theme="light"] body {
+  background: #f4f7fc !important;
+  background-image: none !important;
+  color: #17243a !important;
+}
+html[data-theme="light"] header,
+html[data-theme="light"] footer {
+  background: #ffffff !important;
+  border-color: #dce4ef !important;
+  color: #58677e !important;
+}
+html[data-theme="light"] h1,
+html[data-theme="light"] .developer-card h2 {
+  color: #14243b !important;
+}
+html[data-theme="light"] h2 {
+  color: #087fa3 !important;
+}
+html[data-theme="light"] p,
+html[data-theme="light"] li,
+html[data-theme="light"] .updated,
+html[data-theme="light"] .muted {
+  color: #46566e !important;
+}
+html[data-theme="light"] a {
+  color: #087fa3;
+}
+html[data-theme="light"] .panel,
+html[data-theme="light"] .note,
+html[data-theme="light"] .content-panel,
+html[data-theme="light"] .feature-card,
+html[data-theme="light"] .card,
+html[data-theme="light"] .ebox-shot {
+  background: #ffffff !important;
+  color: #17243a !important;
+  border-color: #dce4ef !important;
+  box-shadow: 0 8px 24px rgba(24, 45, 75, .06);
+}
+html[data-theme="light"] .developer-card {
+  background: linear-gradient(135deg, #ffffff, #eaf7fc) !important;
+  border-color: #b9deea !important;
+}
+html[data-theme="light"] .developer-card .developer-title,
+html[data-theme="light"] .developer-card .developer-label,
+html[data-theme="light"] .developer-card .developer-signature {
+  color: #087fa3 !important;
+}
+html[data-theme="light"] .ebox-gallery-section {
+  color: #17243a !important;
+}
+html[data-theme="light"] .ebox-gallery-heading p:last-child {
+  color: #58677e !important;
+}
+html[data-theme="light"] .ebox-shot {
+  color: #17243a !important;
+}
+html[data-theme="light"] .notice {
+  color: #58677e !important;
+}
+html[data-theme="light"] .download,
+html[data-theme="light"] .email {
+  color: #07111f !important;
+}
+html[data-theme="light"] .whatsapp {
+  color: #07111f !important;
+}
+html[data-theme="light"] .telegram {
+  color: #ffffff !important;
+}
+.ebox-theme-toggle {
+  position: fixed;
+  z-index: 99999;
+  right: 18px;
+  bottom: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid rgba(128, 221, 255, .4);
+  border-radius: 28px;
+  background: #12243a;
+  color: #ffffff;
+  font: 600 14px/1.2 Arial, sans-serif;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .18);
+  cursor: pointer;
+}
+.ebox-theme-toggle:hover {
+  transform: translateY(-2px);
+}
+html[data-theme="light"] .ebox-theme-toggle {
+  background: #ffffff;
+  color: #17243a;
+  border-color: #cbd8e8;
+  box-shadow: 0 6px 24px rgba(24, 45, 75, .15);
+}
+@media (max-width: 600px) {
+  .ebox-theme-toggle {
+    right: 12px;
+    bottom: 12px;
+    min-height: 44px;
+  }
+}
+
+</style>
+
+<script>
+(function () {
+  try {
+    var saved = localStorage.getItem('ebox-theme');
+    var theme = saved === 'light' || saved === 'dark'
+      ? saved
+      : (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
+          ? 'light' : 'dark');
+    document.documentElement.setAttribute('data-theme', theme);
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+})();
+</script>
+
 </head>
 
 <body>
+<button class="ebox-theme-toggle" type="button" aria-label="Change color theme"></button>
+
   <header>
     <div class="container nav">
       <a class="brand" href="#home" aria-label="Ebox Home">
@@ -804,6 +935,35 @@
   @media (max-width: 900px) { .ebox-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   @media (max-width: 560px) { .ebox-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } .ebox-gallery-section { padding: 40px 14px; } }
 </style>
+
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var button = document.querySelector('.ebox-theme-toggle');
+  if (!button) return;
+
+  function updateButton() {
+    var light = root.getAttribute('data-theme') === 'light';
+    button.innerHTML = light
+      ? '<span aria-hidden="true">🌙</span><span>Dark mode</span>'
+      : '<span aria-hidden="true">☀️</span><span>Light mode</span>';
+    button.setAttribute('aria-label', light ? 'Switch to dark mode' : 'Switch to light mode');
+    button.setAttribute('title', light ? 'Switch to dark mode' : 'Switch to light mode');
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', light ? '#f4f7fc' : '#080b14');
+  }
+
+  button.addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('ebox-theme', next); } catch (e) {}
+    updateButton();
+  });
+
+  updateButton();
+})();
+</script>
 
 </body>
 </html>
