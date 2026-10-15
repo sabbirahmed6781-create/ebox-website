@@ -737,5 +737,47 @@
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
+<!-- Ebox Screenshot Gallery: paste this section into index.html where you want the gallery to appear -->
+<section class="ebox-gallery-section" id="app-screenshots">
+  <div class="ebox-gallery-heading">
+    <p class="ebox-eyebrow">TAKE A LOOK INSIDE</p>
+    <h2>Ebox App Screenshots</h2>
+    <p>Explore the Ebox experience for Live TV, Movies and TV Series.</p>
+  </div>
+  <div class="ebox-gallery">
+      <a class="ebox-shot" href="assets/images/screenshots/splash-screen.jpg" target="_blank" rel="noopener" aria-label="Open Ebox Splash Screen screenshot">
+        <img src="assets/images/screenshots/splash-screen.jpg" alt="Ebox Splash Screen screenshot" loading="lazy">
+        <span>Ebox Splash Screen</span>
+      </a>\n      <a class="ebox-shot" href="assets/images/screenshots/tv-series.jpg" target="_blank" rel="noopener" aria-label="Open TV Series screenshot">
+        <img src="assets/images/screenshots/tv-series.jpg" alt="TV Series screenshot" loading="lazy">
+        <span>TV Series</span>
+      </a>\n      <a class="ebox-shot" href="assets/images/screenshots/live-tv-home.jpg" target="_blank" rel="noopener" aria-label="Open Live TV Home screenshot">
+        <img src="assets/images/screenshots/live-tv-home.jpg" alt="Live TV Home screenshot" loading="lazy">
+        <span>Live TV Home</span>
+      </a>\n      <a class="ebox-shot" href="assets/images/screenshots/movie-servers.jpg" target="_blank" rel="noopener" aria-label="Open Movie Servers screenshot">
+        <img src="assets/images/screenshots/movie-servers.jpg" alt="Movie Servers screenshot" loading="lazy">
+        <span>Movie Servers</span>
+      </a>\n      <a class="ebox-shot" href="assets/images/screenshots/live-tv-channels.jpg" target="_blank" rel="noopener" aria-label="Open Live TV Channels screenshot">
+        <img src="assets/images/screenshots/live-tv-channels.jpg" alt="Live TV Channels screenshot" loading="lazy">
+        <span>Live TV Channels</span>
+      </a>
+  </div>
+</section>
+
+<style>
+  .ebox-gallery-section { padding: 56px 20px; color: #f5f7fb; }
+  .ebox-gallery-heading { max-width: 760px; margin: 0 auto 28px; text-align: center; }
+  .ebox-eyebrow { color: #ff5964; font-size: .78rem; font-weight: 800; letter-spacing: .16em; }
+  .ebox-gallery-heading h2 { margin: 8px 0 10px; font-size: clamp(1.7rem, 4vw, 2.5rem); }
+  .ebox-gallery-heading p:last-child { color: #aab4c5; line-height: 1.6; }
+  .ebox-gallery { max-width: 1100px; margin: auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px; }
+  .ebox-shot { display: block; overflow: hidden; border: 1px solid #27384d; border-radius: 18px; background: #101724; color: #f5f7fb; text-decoration: none; transition: transform .2s ease, border-color .2s ease; }
+  .ebox-shot:hover { transform: translateY(-4px); border-color: #ff5964; }
+  .ebox-shot img { display: block; width: 100%; aspect-ratio: 9 / 19.5; object-fit: cover; object-position: top; }
+  .ebox-shot span { display: block; padding: 12px 10px; text-align: center; font-weight: 700; font-size: .9rem; }
+  @media (max-width: 900px) { .ebox-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .ebox-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } .ebox-gallery-section { padding: 40px 14px; } }
+</style>
+
 </body>
 </html>
