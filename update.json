@@ -1,0 +1,10 @@
+{
+  "latestVersion": "1.0.0",
+  "versionCode": 1,
+  "apkUrl": "https://github.com/sabbirahmed6781-create/ebox-website/releases/latest/download/app-release.apk",
+  "forceUpdate": false,
+  "releaseNotes": [
+    "Ebox Android app",
+    "Bug fixes and improvements"
+  ]
+}
