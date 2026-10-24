@@ -84,12 +84,13 @@ th,td{text-align:left;padding:10px;border-bottom:1px solid var(--border);overflo
     <table>
       <thead>
         <tr>
-          <th>User</th><th>Method</th><th>Sender Number</th>
+          <th>User</th><th>Package</th><th>Amount</th>
+          <th>Method</th><th>Sender Number</th>
           <th>Transaction ID</th><th>Status</th><th>Actions</th>
         </tr>
       </thead>
       <tbody id="paymentsBody">
-        <tr><td colspan="6">Login to load payment requests.</td></tr>
+        <tr><td colspan="8">Login to load payment requests.</td></tr>
       </tbody>
     </table>
   </div>
@@ -220,7 +221,7 @@ function escapeHtml(value) {
 
 async function loadPayments() {
   const body = $("paymentsBody");
-  body.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+  body.innerHTML = '<tr><td colspan="8">Loading...</td></tr>';
 
   try {
     const result = await api("/admin/payments");
@@ -228,7 +229,7 @@ async function loadPayments() {
       (result.payments || result.requests || result.data || []);
 
     if (!Array.isArray(payments) || payments.length === 0) {
-      body.innerHTML = '<tr><td colspan="6">No payment requests found.</td></tr>';
+      body.innerHTML = '<tr><td colspan="8">No payment requests found.</td></tr>';
       return;
     }
 
@@ -242,9 +243,21 @@ async function loadPayments() {
       const trx = payment.transaction_id || "—";
       const status = String(payment.status || "pending").toLowerCase();
 
+      const months = Number(payment.plan_months || 1);
+      const plans = {
+        1: { name: "1 Month", amount: 100, days: 30 },
+        2: { name: "2 Months", amount: 200, days: 60 },
+        6: { name: "6 Months", amount: 500, days: 180 },
+        12: { name: "1 Year", amount: 1000, days: 365 }
+      };
+      const plan = plans[months] || plans[1];
+      const amount = Number(payment.amount ?? plan.amount);
+
       const row = document.createElement("tr");
       row.innerHTML =
         "<td>" + escapeHtml(username) + "</td>" +
+        "<td>" + escapeHtml(plan.name) + "</td>" +
+        "<td>৳" + escapeHtml(amount) + "</td>" +
         "<td>" + escapeHtml(method) + "</td>" +
         "<td>" + escapeHtml(sender) + "</td>" +
         "<td>" + escapeHtml(trx) + "</td>" +
@@ -258,10 +271,18 @@ async function loadPayments() {
         approve.textContent = "Approve";
         approve.className = "secondary";
         approve.addEventListener("click", async () => {
-          if (!confirm("Verify this transaction and approve 30 days for " + username + "?")) return;
+          if (!confirm(
+            "Verify this transaction before approval.\n\n" +
+            "User: " + username + "\n" +
+            "Package: " + plan.name + "\n" +
+            "Amount: ৳" + amount + "\n" +
+            "Duration: " + plan.days + " days\n" +
+            "Transaction ID: " + trx + "\n\n" +
+            "Have you verified the payment in the official bKash/Nagad channel?"
+          )) return;
           try {
             await api("/admin/payments/review", "POST", {
-              id, decision: "approved", days: 30
+              id, decision: "approved"
             });
             showMessage("Payment approved. Refreshing lists.", "success");
             await loadPayments();
@@ -296,7 +317,7 @@ async function loadPayments() {
       body.appendChild(row);
     }
   } catch (error) {
-    body.innerHTML = '<tr><td colspan="6">Could not load payment requests.</td></tr>';
+    body.innerHTML = '<tr><td colspan="8">Could not load payment requests.</td></tr>';
     showMessage(error.message || "Payment request loading failed.");
   }
 }
