@@ -76,6 +76,26 @@ th,td{text-align:left;padding:10px;border-bottom:1px solid var(--border);overflo
 <p class="small">Use Renew to add subscription days. Disable/Enable changes account access.</p>
 </div>
 
+
+<div class="card">
+  <h2>Payment Requests</h2>
+  <button class="secondary" id="refreshPaymentsButton">Refresh Payments</button>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>User</th><th>Method</th><th>Sender Number</th>
+          <th>Transaction ID</th><th>Status</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="paymentsBody">
+        <tr><td colspan="6">Login to load payment requests.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">Verify each transaction in the official bKash/Nagad channel before approving it.</p>
+</div>
+
 <button class="danger" id="logoutButton">Logout</button>
 </section>
 
@@ -155,6 +175,7 @@ $("loginForm").addEventListener("submit", async event => {
 
     showMessage("Admin login successful.", "success");
     await loadUsers();
+    await loadPayments();
   } catch (error) {
     token = null;
     showMessage(error.message || "Login failed.");
@@ -195,6 +216,92 @@ function escapeHtml(value) {
     "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
   })[ch]);
 }
+
+
+async function loadPayments() {
+  const body = $("paymentsBody");
+  body.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+
+  try {
+    const result = await api("/admin/payments");
+    const payments = Array.isArray(result) ? result :
+      (result.payments || result.requests || result.data || []);
+
+    if (!Array.isArray(payments) || payments.length === 0) {
+      body.innerHTML = '<tr><td colspan="6">No payment requests found.</td></tr>';
+      return;
+    }
+
+    body.replaceChildren();
+
+    for (const payment of payments) {
+      const id = payment.id;
+      const username = payment.username || payment.user_username || "—";
+      const method = payment.payment_method || payment.method || "—";
+      const sender = payment.sender_number || "—";
+      const trx = payment.transaction_id || "—";
+      const status = String(payment.status || "pending").toLowerCase();
+
+      const row = document.createElement("tr");
+      row.innerHTML =
+        "<td>" + escapeHtml(username) + "</td>" +
+        "<td>" + escapeHtml(method) + "</td>" +
+        "<td>" + escapeHtml(sender) + "</td>" +
+        "<td>" + escapeHtml(trx) + "</td>" +
+        "<td>" + escapeHtml(status) + "</td>";
+
+      const actions = document.createElement("td");
+      actions.className = "actions";
+
+      if (status === "pending") {
+        const approve = document.createElement("button");
+        approve.textContent = "Approve";
+        approve.className = "secondary";
+        approve.addEventListener("click", async () => {
+          if (!confirm("Verify this transaction and approve 30 days for " + username + "?")) return;
+          try {
+            await api("/admin/payments/review", "POST", {
+              id, decision: "approved", days: 30
+            });
+            showMessage("Payment approved. Refreshing lists.", "success");
+            await loadPayments();
+            await loadUsers();
+          } catch (error) {
+            showMessage(error.message || "Could not approve payment.");
+          }
+        });
+
+        const reject = document.createElement("button");
+        reject.textContent = "Reject";
+        reject.className = "danger";
+        reject.addEventListener("click", async () => {
+          if (!confirm("Reject this payment request?")) return;
+          try {
+            await api("/admin/payments/review", "POST", {
+              id, decision: "rejected"
+            });
+            showMessage("Payment request rejected.", "success");
+            await loadPayments();
+          } catch (error) {
+            showMessage(error.message || "Could not reject payment.");
+          }
+        });
+
+        actions.append(approve, reject);
+      } else {
+        actions.textContent = "Reviewed";
+      }
+
+      row.appendChild(actions);
+      body.appendChild(row);
+    }
+  } catch (error) {
+    body.innerHTML = '<tr><td colspan="6">Could not load payment requests.</td></tr>';
+    showMessage(error.message || "Payment request loading failed.");
+  }
+}
+
+$("refreshPaymentsButton").addEventListener("click", loadPayments);
 
 async function loadUsers() {
   const body = $("usersBody");
