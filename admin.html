@@ -214,7 +214,10 @@ async function loadUsers() {
 
     for (const user of users) {
       const username = user.username || user.name || "";
-      const active = user.active !== false && user.status !== "disabled" && user.status !== "inactive";
+      const status = String(user.status ?? "").toLowerCase();
+      const active = status === "active" ||
+        (user.active === true || user.active === 1 || user.active === "1") ||
+        (user.active == null && status !== "disabled" && status !== "inactive");
       const expiry = user.subscription_expiry || user.subscriptionExpiry || user.expiresAt || user.expires_at || user.expiry || user.subscriptionExpiresAt || "—";
 
       const row = document.createElement("tr");
