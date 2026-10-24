@@ -1,11 +1,11 @@
 {
-  "latestVersion": "1.0.2",
-  "versionCode": 3,
+  "latestVersion": "1.0.3",
+  "versionCode": 4,
   "apkUrl": "https://github.com/sabbirahmed6781-create/ebox-website/releases/latest/download/app-release.apk",
-  "forceUpdate": false,
+  "forceUpdate": true,
   "releaseNotes": [
-    "Live TV server fallback improvements",
-    "Video loading timeout improvements",
+    "Mandatory app update support",
+    "Improved subscription update handling",
     "Bug fixes and performance improvements"
   ]
 }
