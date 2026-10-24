@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ebox Admin Panel</title>
+<link rel="icon" href="assets/images/ebox.png">
+<style>
+:root{color-scheme:dark;--bg:#080b14;--panel:#101727;--text:#f5f7ff;--muted:#a6b0c6;--red:#ef3340;--border:#29344a}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:950px;margin:25px auto}
+header{text-align:center;margin-bottom:24px}
+header img{width:65px;height:65px;object-fit:contain}
+h1{margin:10px 0;color:#ff414d}
+p{color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:18px}
+input,button{width:100%;padding:12px;margin:7px 0;border-radius:8px;border:1px solid var(--border);font-size:15px}
+input{background:#080d18;color:white}
+button{background:var(--red);color:white;border:0;font-weight:bold;cursor:pointer}
+button.secondary{background:#26334b}
+button.danger{background:#a5222b}
+button:disabled{opacity:.5;cursor:wait}
+.hidden{display:none}
+.status{padding:12px;border-radius:8px;margin:12px 0;overflow-wrap:anywhere}
+.error{background:#421b25;color:#ffb9c0}
+.success{background:#123b2b;color:#b9ffda}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th,td{text-align:left;padding:10px;border-bottom:1px solid var(--border);overflow-wrap:anywhere}
+.table-wrap{overflow-x:auto}
+.small{font-size:13px;color:var(--muted)}
+.actions button{min-width:85px;width:auto;padding:8px}
+@media(max-width:600px){body{padding:10px}.card{padding:14px}th,td{padding:7px;font-size:13px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<img src="assets/images/ebox.png" alt="Ebox">
+<h1>Ebox Admin Panel</h1>
+<p>Manage Ebox subscriptions</p>
+</header>
+
+<section class="card" id="loginCard">
+<h2>Admin Login</h2>
+<form id="loginForm">
+<label>Admin username</label>
+<input id="adminUsername" value="eboxadmin" autocomplete="username" required>
+<label>Admin password</label>
+<input id="adminPassword" type="password" autocomplete="current-password" required>
+<button id="loginButton">Login</button>
+</form>
+</section>
+
+<section id="dashboard" class="hidden">
+<div class="card">
+<h2>Create User</h2>
+<form id="createForm">
+<label>New username</label>
+<input id="newUsername" autocomplete="off" required minlength="3" maxlength="50">
+<label>Password (minimum 10 characters)</label>
+<input id="newPassword" type="password" autocomplete="new-password" required minlength="10">
+<button id="createButton">Create 30-Day Account</button>
+</form>
+</div>
+
+<div class="card">
+<h2>User Accounts</h2>
+<button class="secondary" id="refreshButton">Refresh User List</button>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Username</th><th>Status</th><th>Expiry</th><th>Actions</th></tr></thead>
+<tbody id="usersBody"><tr><td colspan="4">Login to load users.</td></tr></tbody>
+</table>
+</div>
+<p class="small">Use Renew to add subscription days. Disable/Enable changes account access.</p>
+</div>
+
+<button class="danger" id="logoutButton">Logout</button>
+</section>
+
+<div id="message" role="status" aria-live="polite"></div>
+</main>
+
+<script>
+"use strict";
+
+const API = "https://ebox-subscription-api.sabbirahmed6781.workers.dev";
+let token = null;
+
+const $ = id => document.getElementById(id);
+
+function showMessage(text, type = "error") {
+  const box = $("message");
+  box.className = "status " + type;
+  box.textContent = text;
+}
+
+function clearMessage() {
+  $("message").textContent = "";
+  $("message").className = "";
+}
+
+async function api(path, method = "GET", data = null) {
+  const headers = {};
+  if (token) headers.Authorization = "Bearer " + token;
+  if (data !== null) headers["Content-Type"] = "application/json";
+
+  const options = {method, headers};
+  if (data !== null) options.body = JSON.stringify(data);
+
+  const response = await fetch(API + path, options);
+  const raw = await response.text();
+  let result;
+
+  try {
+    result = raw ? JSON.parse(raw) : {};
+  } catch {
+    throw new Error("Server returned an unreadable response.");
+  }
+
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      token = null;
+    }
+    throw new Error(result.error || result.message || ("Request failed: " + response.status));
+  }
+
+  return result;
+}
+
+function busy(button, value) {
+  button.disabled = value;
+}
+
+$("loginForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  clearMessage();
+
+  const button = $("loginButton");
+  busy(button, true);
+
+  try {
+    const result = await api("/login", "POST", {
+      username: $("adminUsername").value.trim(),
+      password: $("adminPassword").value
+    });
+
+    if (!result.token) throw new Error("Login response did not include a token.");
+
+    token = result.token;
+    $("adminPassword").value = "";
+    $("loginCard").classList.add("hidden");
+    $("dashboard").classList.remove("hidden");
+
+    showMessage("Admin login successful.", "success");
+    await loadUsers();
+  } catch (error) {
+    token = null;
+    showMessage(error.message || "Login failed.");
+  } finally {
+    busy(button, false);
+  }
+});
+
+$("createForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  clearMessage();
+
+  const username = $("newUsername").value.trim();
+  const password = $("newPassword").value;
+  const button = $("createButton");
+
+  if (password.length < 10) {
+    showMessage("Password must contain at least 10 characters.");
+    return;
+  }
+
+  busy(button, true);
+  try {
+    const result = await api("/admin/users", "POST", {username, password});
+    $("newUsername").value = "";
+    $("newPassword").value = "";
+    showMessage(result.message || "Account created successfully.", "success");
+    await loadUsers();
+  } catch (error) {
+    showMessage(error.message || "Could not create account.");
+  } finally {
+    busy(button, false);
+  }
+});
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  })[ch]);
+}
+
+async function loadUsers() {
+  const body = $("usersBody");
+  body.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+
+  try {
+    const result = await api("/admin/users");
+    const users = Array.isArray(result) ? result :
+      (result.users || result.data || []);
+
+    if (!Array.isArray(users) || users.length === 0) {
+      body.innerHTML = '<tr><td colspan="4">No users found, or the API response format needs adjustment.</td></tr>';
+      return;
+    }
+
+    body.replaceChildren();
+
+    for (const user of users) {
+      const username = user.username || user.name || "";
+      const active = user.active !== false && user.status !== "disabled" && user.status !== "inactive";
+      const expiry = user.expiresAt || user.expires_at || user.expiry || user.subscriptionExpiresAt || "—";
+
+      const row = document.createElement("tr");
+      row.innerHTML =
+        "<td>" + escapeHtml(username) + "</td>" +
+        "<td>" + (active ? "Active" : "Disabled") + "</td>" +
+        "<td>" + escapeHtml(expiry) + "</td>" +
+        '<td class="actions"></td>';
+
+      const actions = row.querySelector(".actions");
+
+      const renew = document.createElement("button");
+      renew.textContent = "Renew";
+      renew.className = "secondary";
+      renew.addEventListener("click", async () => {
+        const answer = prompt("How many days to add?", "30");
+        if (answer === null) return;
+        const days = Number(answer);
+        if (!Number.isInteger(days) || days < 1 || days > 3650) {
+          showMessage("Enter a number of days from 1 to 3650.");
+          return;
+        }
+        try {
+          await api("/admin/users/renew", "POST", {username, days});
+          showMessage("Subscription renewed.", "success");
+          await loadUsers();
+        } catch (error) {
+          showMessage(error.message || "Renewal failed.");
+        }
+      });
+
+      const toggle = document.createElement("button");
+      toggle.textContent = active ? "Disable" : "Enable";
+      toggle.className = active ? "danger" : "secondary";
+      toggle.addEventListener("click", async () => {
+        if (!confirm((active ? "Disable " : "Enable ") + username + "?")) return;
+        try {
+          await api("/admin/users/status", "POST", {username, active: !active});
+          showMessage("Account status updated.", "success");
+          await loadUsers();
+        } catch (error) {
+          showMessage(error.message || "Status update failed.");
+        }
+      });
+
+      actions.append(renew, toggle);
+      body.appendChild(row);
+    }
+  } catch (error) {
+    body.innerHTML = '<tr><td colspan="4">Could not load users. Check the API response and admin permissions.</td></tr>';
+    showMessage(error.message || "Could not load users.");
+  }
+}
+
+$("refreshButton").addEventListener("click", async () => {
+  clearMessage();
+  await loadUsers();
+});
+
+$("logoutButton").addEventListener("click", () => {
+  token = null;
+  $("dashboard").classList.add("hidden");
+  $("loginCard").classList.remove("hidden");
+  $("adminPassword").value = "";
+  $("usersBody").innerHTML = '<tr><td colspan="4">Please log in again.</td></tr>';
+  clearMessage();
+});
+</script>
+</body>
+</html>
