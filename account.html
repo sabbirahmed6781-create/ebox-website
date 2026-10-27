@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070910">
+  <title>Ebox Account</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #070910;
+      --card: #111522;
+      --border: #272d40;
+      --text: #f5f6fb;
+      --muted: #a5adc0;
+      --red: #f04452;
+      --green: #32d296;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+    }
+    a { color: #ff6874; }
+    header {
+      border-bottom: 1px solid var(--border);
+      background: #0b0e17;
+    }
+    .nav {
+      max-width: 1050px;
+      margin: auto;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: white;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 24px;
+    }
+    .brand span { color: var(--red); }
+    .brand img { width: 38px; height: 38px; object-fit: contain; }
+    .nav a:last-child { text-decoration: none; }
+    main { max-width: 850px; margin: 36px auto; padding: 0 18px; }
+    h1 { font-size: clamp(28px, 5vw, 38px); margin: 0 0 8px; }
+    h2 { margin-top: 0; font-size: 22px; }
+    .muted, .small { color: var(--muted); }
+    .small { font-size: 13px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 22px;
+    }
+    label { display: block; margin: 15px 0 6px; font-weight: 600; }
+    input {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: #090c14;
+      color: white;
+      font: inherit;
+    }
+    button {
+      border: 0;
+      border-radius: 9px;
+      padding: 12px 18px;
+      background: var(--red);
+      color: white;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .6; cursor: wait; }
+    .secondary { background: #292f42; }
+    .hidden { display: none !important; }
+    .status {
+      padding: 12px 14px;
+      border-radius: 9px;
+      margin-top: 15px;
+      overflow-wrap: anywhere;
+      background: #281820;
+      color: #ffb5bc;
+    }
+    .success { background: #102820; color: #9af0c9; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 14px;
+    }
+    .stat {
+      background: #0b0f19;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      overflow-wrap: anywhere;
+    }
+    .stat strong { display: block; font-size: 18px; margin-top: 5px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 450px; }
+    th, td {
+      padding: 11px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th { color: var(--muted); }
+    footer {
+      text-align: center;
+      color: var(--muted);
+      padding: 25px 15px;
+      border-top: 1px solid var(--border);
+      margin-top: 45px;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <a class="brand" href="index.html">
+      <img src="assets/images/ebox.png" alt="Ebox logo">
+      <span style="color:white">E<span>Ebox</span></span>
+    </a>
+    <a href="index.html">← Back to website</a>
+  </div>
+</header>
+
+<main>
+  <h1>My Ebox Account</h1>
+  <p class="muted">Sign in with the username and password provided by the Ebox administrator.</p>
+
+  <section class="card" id="loginCard">
+    <h2>Account Login</h2>
+    <form id="loginForm">
+      <label for="username">Username</label>
+      <input id="username" name="username" autocomplete="username"
+             required maxlength="100">
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password"
+             autocomplete="current-password" required>
+
+      <p class="small">Don't have an account? Contact the administrator. Public registration is disabled.</p>
+      <button id="loginButton" type="submit">Login</button>
+    </form>
+  </section>
+
+  <section class="hidden" id="dashboard">
+    <div class="card">
+      <h2>Account Overview</h2>
+      <div class="grid">
+        <div class="stat">
+          <span class="muted">Username</span>
+          <strong id="accountUsername">—</strong>
+        </div>
+        <div class="stat">
+          <span class="muted">Account Status</span>
+          <strong id="accountStatus">—</strong>
+        </div>
+        <div class="stat">
+          <span class="muted">Subscription Status</span>
+          <strong id="subscriptionStatus">—</strong>
+        </div>
+        <div class="stat">
+          <span class="muted">Subscription Expiry</span>
+          <strong id="subscriptionExpiry">—</strong>
+        </div>
+      </div>
+      <p id="subscriptionNote" class="muted"></p>
+      <button class="secondary" id="refreshButton" type="button">Refresh Account</button>
+      <button id="logoutButton" type="button">Logout</button>
+    </div>
+
+    <div class="card">
+      <h2>My Payment Requests</h2>
+      <p class="small">Payment requests and their status appear here if available.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Plan</th><th>Amount</th><th>Status</th></tr>
+          </thead>
+          <tbody id="paymentsBody">
+            <tr><td colspan="4">Loading payment requests…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div id="message" class="hidden" role="status" aria-live="polite"></div>
+</main>
+
+<footer>© <span id="year"></span> Ebox</footer>
+
+<script>
+"use strict";
+
+const API = "https://ebox-subscription-api.sabbirahmed6781.workers.dev";
+const $ = id => document.getElementById(id);
+let token = null;
+
+$("year").textContent = new Date().getFullYear();
+
+function showMessage(message, success = false) {
+  const box = $("message");
+  box.textContent = message;
+  box.className = success ? "status success" : "status";
+}
+
+function clearMessage() {
+  $("message").textContent = "";
+  $("message").className = "hidden";
+}
+
+async function api(path, method = "GET", data = null) {
+  const headers = {};
+  if (token) headers.Authorization = "Bearer " + token;
+  if (data !== null) headers["Content-Type"] = "application/json";
+
+  const options = { method, headers };
+  if (data !== null) options.body = JSON.stringify(data);
+
+  const response = await fetch(API + path, options);
+  const raw = await response.text();
+  let result;
+
+  try {
+    result = raw ? JSON.parse(raw) : {};
+  } catch {
+    throw new Error("The server returned an unreadable response.");
+  }
+
+  if (!response.ok) {
+    throw new Error(result.error || result.message || ("Request failed: " + response.status));
+  }
+  return result;
+}
+
+function firstValue(objects, keys, fallback = "—") {
+  for (const object of objects) {
+    if (!object || typeof object !== "object") continue;
+    for (const key of keys) {
+      if (object[key] !== undefined && object[key] !== null && object[key] !== "") {
+        return object[key];
+      }
+    }
+  }
+  return fallback;
+}
+
+function formatDate(value) {
+  if (!value || value === "—") return "—";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
+}
+
+function showLogin() {
+  token = null;
+  $("dashboard").classList.add("hidden");
+  $("loginCard").classList.remove("hidden");
+  $("password").value = "";
+}
+
+async function loadDashboard() {
+  clearMessage();
+
+  const [meResult, subResult, paymentResult] = await Promise.allSettled([
+    api("/me"),
+    api("/subscription"),
+    api("/payments/mine")
+  ]);
+
+  let user = {};
+  if (meResult.status === "fulfilled") {
+    user = meResult.value.user || meResult.value.account || meResult.value;
+  } else {
+    throw meResult.reason;
+  }
+
+  const subscription = subResult.status === "fulfilled"
+    ? (subResult.value.subscription || subResult.value)
+    : {};
+
+  $("accountUsername").textContent =
+    firstValue([user], ["username", "name"]);
+  $("accountStatus").textContent =
+    firstValue([user], ["status", "account_status"], "Active");
+  $("subscriptionStatus").textContent =
+    firstValue([subscription, user], ["subscription_status", "status"], "Unknown");
+  $("subscriptionExpiry").textContent = formatDate(
+    firstValue([subscription, user],
+      ["subscription_expiry", "expiry", "expires_at"])
+  );
+
+  const statusText = String($("subscriptionStatus").textContent).toLowerCase();
+  $("subscriptionNote").textContent =
+    statusText.includes("expired")
+      ? "Your subscription appears to be expired. Please contact the administrator for renewal."
+      : "If your subscription information looks incorrect, contact the administrator.";
+
+  const body = $("paymentsBody");
+  body.replaceChildren();
+
+  if (paymentResult.status === "fulfilled") {
+    const result = paymentResult.value;
+    const payments = Array.isArray(result)
+      ? result
+      : (result.payments || result.requests || result.data || []);
+
+    if (Array.isArray(payments) && payments.length) {
+      for (const payment of payments) {
+        const row = document.createElement("tr");
+        const values = [
+          formatDate(firstValue([payment], ["created_at", "createdAt", "date"])),
+          firstValue([payment], ["plan_months", "months", "plan"], "—"),
+          firstValue([payment], ["amount", "amount_bdt"], "—"),
+          firstValue([payment], ["status", "payment_status"], "Pending")
+        ];
+        for (const value of values) {
+          const cell = document.createElement("td");
+          cell.textContent = String(value);
+          row.appendChild(cell);
+        }
+        body.appendChild(row);
+      }
+    } else {
+      body.innerHTML = '<tr><td colspan="4">No payment requests found.</td></tr>';
+    }
+  } else {
+    body.innerHTML = '<tr><td colspan="4">Could not load payment requests.</td></tr>';
+  }
+
+  $("loginCard").classList.add("hidden");
+  $("dashboard").classList.remove("hidden");
+}
+
+$("loginForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  clearMessage();
+
+  const button = $("loginButton");
+  button.disabled = true;
+
+  try {
+    const result = await api("/login", "POST", {
+      username: $("username").value.trim(),
+      password: $("password").value
+    });
+
+    if (!result.token) throw new Error("The server did not return a login token.");
+
+    token = result.token;
+    $("password").value = "";
+    await loadDashboard();
+    showMessage("Login successful.", true);
+  } catch (error) {
+    showLogin();
+    showMessage(error.message || "Login failed. Check your username and password.");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+$("refreshButton").addEventListener("click", async () => {
+  try {
+    await loadDashboard();
+    showMessage("Account information refreshed.", true);
+  } catch (error) {
+    showLogin();
+    showMessage(error.message || "Could not refresh account.");
+  }
+});
+
+$("logoutButton").addEventListener("click", () => {
+  showLogin();
+  clearMessage();
+  showMessage("You have logged out.", true);
+});
+</script>
+</body>
+</html>
