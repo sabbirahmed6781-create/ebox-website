@@ -23,6 +23,10 @@ button:hover{border-color:var(--accent)}
 .layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(270px,1fr);gap:18px}
 .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:15px;min-width:0}
 video{width:100%;aspect-ratio:16/9;background:#000;border-radius:10px}
+#playerWrap:fullscreen{width:100vw;height:100vh;background:#000;display:flex;flex-direction:column;justify-content:center}
+#playerWrap:fullscreen video{width:100%;height:100%;max-height:100vh;aspect-ratio:auto;object-fit:contain;border-radius:0}
+#playerWrap:fullscreen #fullscreenChannelControls{z-index:20;bottom:65px}
+#playerWrap:fullscreen #togglePlayerFullscreen{z-index:21}
 #status{color:var(--muted);line-height:1.5}
 #channels{display:grid;gap:8px;max-height:65vh;overflow:auto}
 .channel{display:flex;align-items:center;gap:10px;text-align:left;width:100%;padding:9px}
@@ -70,7 +74,7 @@ video{width:100%;aspect-ratio:16/9;background:#000;border-radius:10px}
 <div class="layout">
 <section class="panel">
 <div id="playerWrap" style="position:relative;width:100%">
-  <video id="player" controls playsinline preload="none"></video>
+  <video id="player" controls controlslist="nofullscreen" playsinline preload="none"></video>
   <button id="togglePlayerFullscreen" type="button" style="position:absolute;top:10px;right:10px;z-index:5;padding:8px 12px;background:#252936eF;color:white;border:1px solid #777;border-radius:8px;cursor:pointer">⛶ Full Screen</button>
   <div id="fullscreenChannelControls" style="position:absolute;left:10px;right:10px;bottom:48px;display:flex;justify-content:space-between;gap:10px;pointer-events:none">
     <button id="fullscreenPrev" type="button" style="pointer-events:auto;padding:10px 14px;background:#252936eF;color:white;border:1px solid #777;border-radius:8px;cursor:pointer">◀ Previous</button>
