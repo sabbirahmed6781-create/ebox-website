@@ -26,6 +26,10 @@ video{width:100%;aspect-ratio:16/9;background:#000;border-radius:10px}
 #status{color:var(--muted);line-height:1.5}
 #channels{display:grid;gap:8px;max-height:65vh;overflow:auto}
 .channel{display:flex;align-items:center;gap:10px;text-align:left;width:100%;padding:9px}
+.channel-row{display:flex;gap:6px}
+.channel-row .channel{flex:1;min-width:0}
+.favorite-button{min-width:48px;padding:8px;color:#ffd166}
+
 .channel.active{border-color:var(--accent);background:#33202a}
 .channel img{width:42px;height:42px;object-fit:contain;background:#080b12;border-radius:7px}
 .channel span{overflow-wrap:anywhere}
@@ -89,6 +93,7 @@ const $ = id => document.getElementById(id);
 let allChannels = [];
 let hls = null;
 let selectedUrl = "";
+let favorites = new Set();
 
 function block(message) {
   $("blocked").textContent = message;
@@ -96,17 +101,20 @@ function block(message) {
   $("tv").classList.add("hidden");
 }
 
-async function api(path) {
-  const response = await fetch(API + path, {
-    headers: {
-      "Authorization": "Bearer " + token,
-      "X-Ebox-Version-Code": "5"
-    },
-    cache: "no-store"
-  });
+async function api(path, method = "GET", body = null) {
+  const headers = {
+    "Authorization": "Bearer " + token,
+    "X-Ebox-Version-Code": "5"
+  };
+  if (body !== null) headers["Content-Type"] = "application/json";
+
+  const options = { method, headers, cache: "no-store" };
+  if (body !== null) options.body = JSON.stringify(body);
+
+  const response = await fetch(API + path, options);
   let data = {};
   try { data = await response.json(); } catch {}
-  if (!response.ok) throw new Error(data.error || "Account verification failed.");
+  if (!response.ok) throw new Error(data.error || "Request failed.");
   return data;
 }
 
@@ -183,6 +191,50 @@ function playChannel(channel, button) {
   }
 }
 
+async function loadFavorites() {
+  const result = await api("/favorites");
+  const items = Array.isArray(result)
+    ? result
+    : (result.favorites || result.data || []);
+
+  favorites = new Set(
+    items
+      .filter(item => !item.item_type || item.item_type === "channel")
+      .map(item => String(item.item_id || item.item_url || ""))
+  );
+}
+
+async function toggleFavorite(channel) {
+  const id = String(channel.url);
+  const isFavorite = favorites.has(id);
+
+  try {
+    if (isFavorite) {
+      await api("/favorites/remove", "POST", {
+        item_type: "channel",
+        item_id: id
+      });
+      favorites.delete(id);
+    } else {
+      await api("/favorites", "POST", {
+        item_type: "channel",
+        item_id: id,
+        item_title: channel.name,
+        item_url: channel.url,
+        item_logo: channel.logo
+      });
+      favorites.add(id);
+    }
+
+    renderChannels();
+    $("status").textContent = isFavorite
+      ? "Removed from Favorites."
+      : "Added to Favorites.";
+  } catch (error) {
+    $("status").textContent = "Could not update Favorites: " + error.message;
+  }
+}
+
 function renderChannels() {
   const query = $("search").value.trim().toLowerCase();
   const visible = allChannels.filter(c => c.name.toLowerCase().includes(query));
@@ -191,6 +243,9 @@ function renderChannels() {
   $("count").textContent = visible.length + " channels";
 
   for (const channel of visible) {
+    const row = document.createElement("div");
+    row.className = "channel-row";
+
     const button = document.createElement("button");
     button.type = "button";
     button.className = "channel";
@@ -211,7 +266,19 @@ function renderChannels() {
     label.textContent = channel.name;
     button.appendChild(label);
     button.addEventListener("click", () => playChannel(channel, button));
-    container.appendChild(button);
+
+    const favoriteButton = document.createElement("button");
+    favoriteButton.type = "button";
+    favoriteButton.className = "favorite-button";
+    favoriteButton.textContent = favorites.has(channel.url) ? "★" : "☆";
+    favoriteButton.title = favorites.has(channel.url)
+      ? "Remove from Favorites"
+      : "Add to Favorites";
+    favoriteButton.setAttribute("aria-label", favoriteButton.title);
+    favoriteButton.addEventListener("click", () => toggleFavorite(channel));
+
+    row.append(button, favoriteButton);
+    container.appendChild(row);
   }
 
   if (!visible.length) {
@@ -265,6 +332,7 @@ async function start() {
     }
 
     $("welcome").textContent = "Welcome, " + (user.username || "Ebox user") + ". Choose a playlist and channel.";
+    await loadFavorites();
     $("tv").classList.remove("hidden");
     await loadPlaylist();
   } catch (error) {
