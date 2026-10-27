@@ -70,6 +70,10 @@ video{width:100%;aspect-ratio:16/9;background:#000;border-radius:10px}
 <div class="layout">
 <section class="panel">
 <video id="player" controls playsinline preload="none"></video>
+<div style="display:flex;gap:10px;margin:12px 0;flex-wrap:wrap">
+  <button id="prevChannel" type="button" style="flex:1;padding:12px;background:#252936;color:white;border:1px solid #444;border-radius:8px;cursor:pointer">◀ Previous Channel</button>
+  <button id="nextChannel" type="button" style="flex:1;padding:12px;background:#e53945;color:white;border:0;border-radius:8px;cursor:pointer">Next Channel ▶</button>
+</div>
 <h2 id="playing">Choose a channel</h2>
 <p id="status">Select a channel from the list.</p>
 </section>
@@ -164,7 +168,9 @@ function stopPlayer() {
 function playChannel(channel, button) {
   stopPlayer();
   selectedUrl = channel.url;
-  document.querySelectorAll(".channel").forEach(b => b.classList.toggle("active", b === button));
+  document.querySelectorAll(".channel").forEach(b =>
+    b.classList.toggle("active", button ? b === button : b.title === channel.name)
+  );
   $("playing").textContent = channel.name;
   $("status").textContent = "Loading " + channel.name + "…";
 
@@ -189,6 +195,24 @@ function playChannel(channel, button) {
   } else {
     $("status").textContent = "This browser does not support HLS playback.";
   }
+}
+
+function changeChannel(direction) {
+  if (!allChannels.length) {
+    $("status").textContent = "No channels loaded yet.";
+    return;
+  }
+
+  const currentIndex = allChannels.findIndex(c => c.url === selectedUrl);
+  let nextIndex;
+
+  if (currentIndex < 0) {
+    nextIndex = direction > 0 ? 0 : allChannels.length - 1;
+  } else {
+    nextIndex = (currentIndex + direction + allChannels.length) % allChannels.length;
+  }
+
+  playChannel(allChannels[nextIndex]);
 }
 
 async function loadFavorites() {
@@ -344,6 +368,8 @@ async function start() {
 
 $("playlist").addEventListener("change", loadPlaylist);
 $("search").addEventListener("input", renderChannels);
+$("prevChannel").addEventListener("click", () => changeChannel(-1));
+$("nextChannel").addEventListener("click", () => changeChannel(1));
 $("player").addEventListener("playing", () => {
   $("status").textContent = "Playing live TV.";
 });
