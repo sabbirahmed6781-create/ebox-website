@@ -404,6 +404,12 @@ document.addEventListener("fullscreenchange", () => {
   const button = $("togglePlayerFullscreen");
   const isFullscreen = document.fullscreenElement === wrap;
 
+  if (isFullscreen && screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock("landscape").catch(() => {});
+  } else if (!isFullscreen && screen.orientation && screen.orientation.unlock) {
+    screen.orientation.unlock();
+  }
+
   button.textContent = isFullscreen ? "✕ Exit Full Screen" : "⛶ Full Screen";
 
   if (isFullscreen) {
