@@ -223,7 +223,9 @@ function clearMessage() {
 }
 
 async function api(path, method = "GET", data = null) {
-  const headers = {};
+  const headers = {
+    "X-Ebox-Version-Code": "5"
+  };
   if (token) headers.Authorization = "Bearer " + token;
   if (data !== null) headers["Content-Type"] = "application/json";
 
