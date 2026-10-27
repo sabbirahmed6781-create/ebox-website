@@ -836,6 +836,98 @@ html[data-theme="light"] .ebox-theme-toggle {
       </div>
     </section>
 
+    <section class="content-section" id="ebox-live-tv">
+      <div class="container">
+        <div class="content-panel ebox-live-panel">
+          <h2>📺 Ebox Live TV</h2>
+          <p>Choose a channel to watch it here. Playback depends on stream availability and browser support.</p>
+
+          <div class="ebox-live-layout">
+            <div class="ebox-live-player-wrap">
+              <video id="ebox-live-player" controls playsinline preload="none"
+                     aria-label="Ebox Live TV player"></video>
+              <p id="ebox-live-status" role="status">Select a channel to start playback.</p>
+            </div>
+            <div class="ebox-live-channel-list" aria-label="Live TV channels">
+              <button type="button" data-stream="https://tvsen5.aynaott.com/P3y2URgG7LDe/index.m3u8">ATN Bangla</button>
+              <button type="button" data-stream="https://tvsen6.aynaott.com/da6WMXAk/index.m3u8">ATN News</button>
+              <button type="button" data-stream="https://tvsen6.aynaott.com/1d3uG9VCgrR9DRtWZM57/index.m3u8">Boishakhi</button>
+              <button type="button" data-stream="https://tvsen6.aynaott.com/FNHpYvGZ7FkCE10PwTHm/index.m3u8">Channel i</button>
+              <button type="button" data-stream="https://tvsen5.aynaott.com/xV4jEKf3D9zc/index.m3u8">N TV</button>
+              <button type="button" data-stream="https://tvsen5.aynaott.com/RtvHD/index.m3u8">RTV</button>
+              <button type="button" data-stream="https://tvsen5.aynaott.com/tgUzpPc9r6xw/index.m3u8">Banglavision</button>
+              <button type="button" data-stream="https://tvsen6.aynaott.com/KGdZEdA7qQ43dmPkgk1j/index.m3u8">Jamuna</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <style>
+      .ebox-live-layout { display:grid; grid-template-columns:minmax(0,2fr) minmax(180px,1fr); gap:18px; margin-top:20px; }
+      .ebox-live-player-wrap video { display:block; width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; }
+      #ebox-live-status { font-size:.9rem; color:var(--muted,#a6b0c6); }
+      .ebox-live-channel-list { display:grid; grid-template-columns:1fr; gap:9px; align-content:start; }
+      .ebox-live-channel-list button { padding:12px; border:1px solid var(--border,rgba(255,255,255,.1)); border-radius:10px; background:var(--panel,#101727); color:var(--text,#f5f7ff); text-align:left; cursor:pointer; font:inherit; }
+      .ebox-live-channel-list button:hover,.ebox-live-channel-list button.active { border-color:#ff5964; background:rgba(255,89,100,.12); }
+      html[data-theme="light"] .ebox-live-channel-list button { background:#fff; color:#17243a; border-color:#dce4ef; }
+      @media(max-width:700px) { .ebox-live-layout { grid-template-columns:1fr; } .ebox-live-channel-list { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+    <script>
+    (function () {
+      const video = document.getElementById('ebox-live-player');
+      const status = document.getElementById('ebox-live-status');
+      const buttons = document.querySelectorAll('.ebox-live-channel-list button');
+      if (!video || !status) return;
+      let hls = null;
+
+      buttons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          const stream = button.dataset.stream;
+          buttons.forEach(b => b.classList.toggle('active', b === button));
+          status.textContent = 'Loading ' + button.textContent.trim() + '…';
+
+          if (hls) {
+            hls.destroy();
+            hls = null;
+          }
+          video.pause();
+          video.removeAttribute('src');
+          video.load();
+
+          if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = stream;
+            video.play().catch(() => {
+              status.textContent = 'Press Play to start. If it fails, this stream may not support browser playback.';
+            });
+          } else if (window.Hls && Hls.isSupported()) {
+            hls = new Hls();
+            hls.loadSource(stream);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, function () {
+              video.play().catch(() => {
+                status.textContent = 'Press Play to start playback.';
+              });
+            });
+            hls.on(Hls.Events.ERROR, function (event, data) {
+              if (data.fatal) status.textContent = 'Playback failed. The stream may be unavailable or block browser access (CORS).';
+            });
+          } else {
+            status.textContent = 'This browser does not support HLS playback.';
+          }
+        });
+      });
+
+      video.addEventListener('playing', function () {
+        status.textContent = 'Playing live TV.';
+      });
+      video.addEventListener('error', function () {
+        status.textContent = 'Could not play this stream. It may be unavailable or block browser access.';
+      });
+    })();
+    </script>
+
     <section class="section" id="download">
       <div class="container">
         <div class="download-panel">
