@@ -69,7 +69,14 @@ video{width:100%;aspect-ratio:16/9;background:#000;border-radius:10px}
 
 <div class="layout">
 <section class="panel">
-<video id="player" controls playsinline preload="none"></video>
+<div id="playerWrap" style="position:relative;width:100%">
+  <video id="player" controls playsinline preload="none"></video>
+  <button id="togglePlayerFullscreen" type="button" style="position:absolute;top:10px;right:10px;z-index:5;padding:8px 12px;background:#252936eF;color:white;border:1px solid #777;border-radius:8px;cursor:pointer">⛶ Full Screen</button>
+  <div id="fullscreenChannelControls" style="position:absolute;left:10px;right:10px;bottom:48px;display:flex;justify-content:space-between;gap:10px;pointer-events:none">
+    <button id="fullscreenPrev" type="button" style="pointer-events:auto;padding:10px 14px;background:#252936eF;color:white;border:1px solid #777;border-radius:8px;cursor:pointer">◀ Previous</button>
+    <button id="fullscreenNext" type="button" style="pointer-events:auto;padding:10px 14px;background:#e53945eF;color:white;border:0;border-radius:8px;cursor:pointer">Next ▶</button>
+  </div>
+</div>
 <div style="display:flex;gap:10px;margin:12px 0;flex-wrap:wrap">
   <button id="prevChannel" type="button" style="flex:1;padding:12px;background:#252936;color:white;border:1px solid #444;border-radius:8px;cursor:pointer">◀ Previous Channel</button>
   <button id="nextChannel" type="button" style="flex:1;padding:12px;background:#e53945;color:white;border:0;border-radius:8px;cursor:pointer">Next Channel ▶</button>
@@ -370,6 +377,44 @@ $("playlist").addEventListener("change", loadPlaylist);
 $("search").addEventListener("input", renderChannels);
 $("prevChannel").addEventListener("click", () => changeChannel(-1));
 $("nextChannel").addEventListener("click", () => changeChannel(1));
+$("fullscreenPrev").addEventListener("click", () => changeChannel(-1));
+$("fullscreenNext").addEventListener("click", () => changeChannel(1));
+
+$("togglePlayerFullscreen").addEventListener("click", async () => {
+  const wrap = $("playerWrap");
+  try {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen();
+    } else if (wrap.requestFullscreen) {
+      await wrap.requestFullscreen();
+    } else {
+      $("status").textContent = "Full Screen is not supported by this browser.";
+    }
+  } catch (error) {
+    $("status").textContent = "Could not open Full Screen. Try the browser's Full Screen button.";
+  }
+});
+
+document.addEventListener("fullscreenchange", () => {
+  const wrap = $("playerWrap");
+  const button = $("togglePlayerFullscreen");
+  const isFullscreen = document.fullscreenElement === wrap;
+
+  button.textContent = isFullscreen ? "✕ Exit Full Screen" : "⛶ Full Screen";
+
+  if (isFullscreen) {
+    wrap.style.background = "#000";
+    wrap.style.display = "flex";
+    wrap.style.flexDirection = "column";
+    wrap.style.justifyContent = "center";
+  } else {
+    wrap.style.background = "";
+    wrap.style.display = "";
+    wrap.style.flexDirection = "";
+    wrap.style.justifyContent = "";
+  }
+});
+
 $("player").addEventListener("playing", () => {
   $("status").textContent = "Playing live TV.";
 });
