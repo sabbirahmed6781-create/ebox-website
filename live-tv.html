@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ebox Live TV</title>
+<style>
+:root{color-scheme:dark;--bg:#070910;--panel:#101727;--text:#f5f7ff;--muted:#a6b0c6;--border:#293246;--accent:#ff5964}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+header{padding:15px 20px;border-bottom:1px solid var(--border);background:var(--panel)}
+nav{max-width:1200px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+a{color:var(--text);text-decoration:none}
+.brand{font-weight:bold;font-size:22px;color:var(--accent)}
+main{max-width:1200px;margin:25px auto;padding:0 15px}
+h1{font-size:28px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+input,select,button{font:inherit;border:1px solid var(--border);border-radius:9px;padding:12px;background:var(--panel);color:var(--text)}
+input{flex:1;min-width:200px}
+select{min-width:220px;max-width:100%}
+button{cursor:pointer}
+button:hover{border-color:var(--accent)}
+.layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(270px,1fr);gap:18px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:15px;min-width:0}
+video{width:100%;aspect-ratio:16/9;background:#000;border-radius:10px}
+#status{color:var(--muted);line-height:1.5}
+#channels{display:grid;gap:8px;max-height:65vh;overflow:auto}
+.channel{display:flex;align-items:center;gap:10px;text-align:left;width:100%;padding:9px}
+.channel.active{border-color:var(--accent);background:#33202a}
+.channel img{width:42px;height:42px;object-fit:contain;background:#080b12;border-radius:7px}
+.channel span{overflow-wrap:anywhere}
+#count{color:var(--muted);font-size:14px}
+.hidden{display:none!important}
+.notice{padding:15px;border:1px solid var(--border);border-radius:10px;line-height:1.6}
+@media(max-width:760px){.layout{grid-template-columns:1fr}#channels{max-height:55vh}.brand{font-size:20px}h1{font-size:24px}}
+</style>
+</head>
+<body>
+<header>
+<nav>
+<a class="brand" href="index.html">Ebox</a>
+<div>
+<a href="account.html">My Account</a>
+&nbsp; | &nbsp;
+<a href="index.html">Home</a>
+</div>
+</nav>
+</header>
+
+<main>
+<h1>📺 Ebox Live TV</h1>
+<p id="welcome">Checking your account…</p>
+
+<section id="blocked" class="notice hidden" role="status"></section>
+
+<section id="tv" class="hidden">
+<div class="controls">
+<select id="playlist" aria-label="Choose channel list">
+<option value="tv-network.m3u">TV Network — 807 channels</option>
+<option value="ebox_dishline.m3u">Ebox Dishline — 801 channels</option>
+<option value="Live.m3u">Live TV — 105 channels</option>
+</select>
+<input id="search" type="search" placeholder="Search channels…" aria-label="Search channels">
+</div>
+
+<div class="layout">
+<section class="panel">
+<video id="player" controls playsinline preload="none"></video>
+<h2 id="playing">Choose a channel</h2>
+<p id="status">Select a channel from the list.</p>
+</section>
+
+<section class="panel">
+<h2>Channels</h2>
+<p id="count">Loading channels…</p>
+<div id="channels"></div>
+</section>
+</div>
+</section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+<script>
+"use strict";
+
+const API = "https://ebox-subscription-api.sabbirahmed6781.workers.dev";
+const token = localStorage.getItem("ebox_token");
+const $ = id => document.getElementById(id);
+let allChannels = [];
+let hls = null;
+let selectedUrl = "";
+
+function block(message) {
+  $("blocked").textContent = message;
+  $("blocked").classList.remove("hidden");
+  $("tv").classList.add("hidden");
+}
+
+async function api(path) {
+  const response = await fetch(API + path, {
+    headers: {
+      "Authorization": "Bearer " + token,
+      "X-Ebox-Version-Code": "5"
+    },
+    cache: "no-store"
+  });
+  let data = {};
+  try { data = await response.json(); } catch {}
+  if (!response.ok) throw new Error(data.error || "Account verification failed.");
+  return data;
+}
+
+function parseM3U(text) {
+  const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/);
+  const result = [];
+  let info = "";
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) continue;
+
+    if (line.startsWith("#EXTINF:")) {
+      info = line;
+      continue;
+    }
+
+    if (line.startsWith("#")) continue;
+
+    if (info) {
+      const comma = info.indexOf(",");
+      const title = comma >= 0 ? info.slice(comma + 1).trim() : "";
+      const logoMatch = info.match(/tvg-logo="([^"]*)"/i);
+      const nameMatch = info.match(/tvg-name="([^"]*)"/i);
+      result.push({
+        name: title || (nameMatch ? nameMatch[1] : "Unknown channel"),
+        logo: logoMatch ? logoMatch[1] : "",
+        url: line
+      });
+      info = "";
+    }
+  }
+  return result;
+}
+
+function stopPlayer() {
+  if (hls) {
+    hls.destroy();
+    hls = null;
+  }
+  $("player").pause();
+  $("player").removeAttribute("src");
+  $("player").load();
+  selectedUrl = "";
+}
+
+function playChannel(channel, button) {
+  stopPlayer();
+  selectedUrl = channel.url;
+  document.querySelectorAll(".channel").forEach(b => b.classList.toggle("active", b === button));
+  $("playing").textContent = channel.name;
+  $("status").textContent = "Loading " + channel.name + "…";
+
+  const video = $("player");
+  if (video.canPlayType("application/vnd.apple.mpegurl")) {
+    video.src = channel.url;
+    video.play().catch(() => {
+      $("status").textContent = "Press Play. If playback fails, the stream may not support browser access.";
+    });
+  } else if (window.Hls && Hls.isSupported()) {
+    hls = new Hls();
+    hls.loadSource(channel.url);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      video.play().catch(() => {
+        $("status").textContent = "Press Play to start playback.";
+      });
+    });
+    hls.on(Hls.Events.ERROR, (event, data) => {
+      if (data.fatal) $("status").textContent = "Playback failed. This stream may be offline or block browser access.";
+    });
+  } else {
+    $("status").textContent = "This browser does not support HLS playback.";
+  }
+}
+
+function renderChannels() {
+  const query = $("search").value.trim().toLowerCase();
+  const visible = allChannels.filter(c => c.name.toLowerCase().includes(query));
+  const container = $("channels");
+  container.replaceChildren();
+  $("count").textContent = visible.length + " channels";
+
+  for (const channel of visible) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "channel";
+    button.title = channel.name;
+
+    if (channel.url === selectedUrl) button.classList.add("active");
+
+    if (channel.logo) {
+      const img = document.createElement("img");
+      img.loading = "lazy";
+      img.alt = "";
+      img.src = channel.logo;
+      img.onerror = () => img.remove();
+      button.appendChild(img);
+    }
+
+    const label = document.createElement("span");
+    label.textContent = channel.name;
+    button.appendChild(label);
+    button.addEventListener("click", () => playChannel(channel, button));
+    container.appendChild(button);
+  }
+
+  if (!visible.length) {
+    const empty = document.createElement("p");
+    empty.textContent = "No matching channels found.";
+    container.appendChild(empty);
+  }
+}
+
+async function loadPlaylist() {
+  stopPlayer();
+  $("channels").replaceChildren();
+  $("count").textContent = "Loading channels…";
+  $("status").textContent = "Loading playlist…";
+
+  try {
+    const response = await fetch("assets/playlists/" + $("playlist").value, {
+      cache: "no-store"
+    });
+    if (!response.ok) throw new Error("Playlist could not be loaded (" + response.status + ").");
+
+    allChannels = parseM3U(await response.text());
+    renderChannels();
+    $("status").textContent = allChannels.length
+      ? "Choose a channel to start playback."
+      : "No channels were found in this playlist.";
+  } catch (error) {
+    allChannels = [];
+    renderChannels();
+    $("status").textContent = error.message;
+  }
+}
+
+async function start() {
+  if (!token) {
+    block("Please log in first. Redirecting to the login page…");
+    setTimeout(() => location.href = "account.html", 1200);
+    return;
+  }
+
+  try {
+    const me = await api("/me");
+    const user = me.user || {};
+    const sub = await api("/subscription");
+    const role = user.role;
+    const status = String(sub.subscription_status || user.subscription_status || "").toLowerCase();
+
+    if (role !== "admin" && status !== "active") {
+      block("Your subscription is expired or inactive. Please contact the Ebox administrator to renew it.");
+      return;
+    }
+
+    $("welcome").textContent = "Welcome, " + (user.username || "Ebox user") + ". Choose a playlist and channel.";
+    $("tv").classList.remove("hidden");
+    await loadPlaylist();
+  } catch (error) {
+    localStorage.removeItem("ebox_token");
+    block((error.message || "Your session has expired.") + " Redirecting to login…");
+    setTimeout(() => location.href = "account.html", 1800);
+  }
+}
+
+$("playlist").addEventListener("change", loadPlaylist);
+$("search").addEventListener("input", renderChannels);
+$("player").addEventListener("playing", () => {
+  $("status").textContent = "Playing live TV.";
+});
+$("player").addEventListener("error", () => {
+  $("status").textContent = "Could not play this stream. It may be unavailable or block browser access.";
+});
+
+start();
+</script>
+</body>
+</html>

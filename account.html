@@ -177,6 +177,7 @@
         </div>
       </div>
       <p id="subscriptionNote" class="muted"></p>
+    <p><a href="live-tv.html" style="display:inline-block;background:#e53945;color:white;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:bold;">📺 Open Live TV</a></p>
       <button class="secondary" id="refreshButton" type="button">Refresh Account</button>
       <button id="logoutButton" type="button">Logout</button>
     </div>
@@ -207,7 +208,7 @@
 
 const API = "https://ebox-subscription-api.sabbirahmed6781.workers.dev";
 const $ = id => document.getElementById(id);
-let token = null;
+let token = localStorage.getItem("ebox_token") || null;
 
 $("year").textContent = new Date().getFullYear();
 
@@ -268,6 +269,7 @@ function formatDate(value) {
 
 function showLogin() {
   token = null;
+  localStorage.removeItem("ebox_token");
   $("dashboard").classList.add("hidden");
   $("loginCard").classList.remove("hidden");
   $("password").value = "";
@@ -362,6 +364,7 @@ $("loginForm").addEventListener("submit", async event => {
     if (!result.token) throw new Error("The server did not return a login token.");
 
     token = result.token;
+    localStorage.setItem("ebox_token", token);
     $("password").value = "";
     await loadDashboard();
     showMessage("Login successful.", true);
@@ -388,6 +391,13 @@ $("logoutButton").addEventListener("click", () => {
   clearMessage();
   showMessage("You have logged out.", true);
 });
+
+if (token) {
+  loadDashboard().catch(error => {
+    showLogin();
+    showMessage(error.message || "Please log in again.");
+  });
+}
 </script>
 </body>
 </html>
