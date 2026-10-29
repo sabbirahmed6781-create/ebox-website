@@ -1,12 +1,11 @@
 {
-  "latestVersion": "1.0.4",
-  "versionCode": 5,
+  "latestVersion": "1.0.5",
+  "versionCode": 6,
   "apkUrl": "https://github.com/sabbirahmed6781-create/ebox-website/releases/latest/download/app-release.apk",
   "forceUpdate": true,
   "releaseNotes": [
-    "Mandatory app update support",
-    "Updated Flutter packages",
-    "Improved subscription update handling",
+    "Improved login session persistence",
+    "Reduced unnecessary login prompts",
     "Bug fixes and performance improvements"
   ]
 }
