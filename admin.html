@@ -58,8 +58,8 @@ th,td{text-align:left;padding:10px;border-bottom:1px solid var(--border);overflo
 <form id="createForm">
 <label>New username</label>
 <input id="newUsername" autocomplete="off" required minlength="3" maxlength="50">
-<label>Password (minimum 10 characters)</label>
-<input id="newPassword" type="password" autocomplete="new-password" required minlength="10">
+<label>Password (any length)</label>
+<input id="newPassword" type="password" autocomplete="new-password" required maxlength="1024">
 <button id="createButton">Create 30-Day Account</button>
 </form>
 </div>
@@ -192,11 +192,6 @@ $("createForm").addEventListener("submit", async event => {
   const username = $("newUsername").value.trim();
   const password = $("newPassword").value;
   const button = $("createButton");
-
-  if (password.length < 10) {
-    showMessage("Password must contain at least 10 characters.");
-    return;
-  }
 
   busy(button, true);
   try {
@@ -364,8 +359,8 @@ async function loadUsers() {
         const answer = prompt("How many days to add?", "30");
         if (answer === null) return;
         const days = Number(answer);
-        if (!Number.isInteger(days) || days < 1 || days > 3650) {
-          showMessage("Enter a number of days from 1 to 3650.");
+        if (!Number.isInteger(days) || days < 1 || days > 365000) {
+          showMessage("Enter a number of days from 1 to 365000.");
           return;
         }
         try {
@@ -391,7 +386,25 @@ async function loadUsers() {
         }
       });
 
-      actions.append(renew, toggle);
+      const remove = document.createElement("button");
+      remove.textContent = "Delete";
+      remove.className = "danger";
+      remove.addEventListener("click", async () => {
+        if (!confirm(
+          "Permanently delete " + username +
+          "? Payment history, favorites and watchlist will also be deleted."
+        )) return;
+
+        try {
+          await api("/admin/users/delete", "POST", {username});
+          showMessage("Account deleted successfully.", "success");
+          await loadUsers();
+        } catch (error) {
+          showMessage(error.message || "Account deletion failed.");
+        }
+      });
+
+      actions.append(renew, toggle, remove);
       body.appendChild(row);
     }
   } catch (error) {
