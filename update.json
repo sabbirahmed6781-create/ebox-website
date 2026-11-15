@@ -1,11 +1,11 @@
 {
-  "latestVersion": "1.0.5",
-  "versionCode": 6,
+  "latestVersion": "1.0.6",
+  "versionCode": 7,
   "apkUrl": "https://github.com/sabbirahmed6781-create/ebox-website/releases/latest/download/app-release.apk",
   "forceUpdate": true,
   "releaseNotes": [
-    "Improved login session persistence",
-    "Reduced unnecessary login prompts",
+    "Added Android Phone and Android TV device tracking",
+    "Improved login session monitoring",
     "Bug fixes and performance improvements"
   ]
 }
