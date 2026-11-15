@@ -77,6 +77,25 @@ th,td{text-align:left;padding:10px;border-bottom:1px solid var(--border);overflo
 </div>
 
 
+<div class="card" id="devicesCard">
+  <h2>Logged-in Devices</h2>
+  <button class="secondary" id="refreshDevicesButton">Refresh Devices</button>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Username</th><th>Device Type</th><th>Device Name / Model</th>
+          <th>OS Version</th><th>Status</th><th>Last Seen</th>
+        </tr>
+      </thead>
+      <tbody id="devicesBody">
+        <tr><td colspan="6">Login to load devices.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">Online means the device sent a heartbeat within the last 120 seconds.</p>
+</div>
+
 <div class="card">
   <h2>Payment Requests</h2>
   <button class="secondary" id="refreshPaymentsButton">Refresh Payments</button>
@@ -177,6 +196,7 @@ $("loginForm").addEventListener("submit", async event => {
     showMessage("Admin login successful.", "success");
     await loadUsers();
     await loadPayments();
+    await loadDevices();
   } catch (error) {
     token = null;
     showMessage(error.message || "Login failed.");
@@ -412,6 +432,49 @@ async function loadUsers() {
     showMessage(error.message || "Could not load users.");
   }
 }
+
+async function loadDevices() {
+  const body = $("devicesBody");
+  body.innerHTML = '<tr><td colspan="6">Loading devices...</td></tr>';
+
+  try {
+    const result = await api("/admin/devices");
+    const devices = Array.isArray(result.devices) ? result.devices : [];
+
+    if (!devices.length) {
+      body.innerHTML = '<tr><td colspan="6">No device sessions found.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = "";
+
+    for (const device of devices) {
+      const row = document.createElement("tr");
+      const online = device.online === 1 || device.online === true;
+      const deviceName = [device.device_name, device.device_model]
+        .filter(Boolean).join(" / ") || "Unknown";
+      const lastSeen = device.last_seen
+        ? new Date(device.last_seen.replace(" ", "T") + (device.last_seen.endsWith("Z") ? "" : "Z")).toLocaleString()
+        : "Unknown";
+
+      row.innerHTML =
+        "<td>" + escapeHtml(device.username || "Unknown") + "</td>" +
+        "<td>" + escapeHtml(device.device_type || "Unknown") + "</td>" +
+        "<td>" + escapeHtml(deviceName) + "</td>" +
+        "<td>" + escapeHtml(device.os_version || "Unknown") + "</td>" +
+        '<td style="color:' + (online ? '#70e6a0' : '#ff929b') + ';font-weight:bold">' +
+        (online ? "Online" : "Offline") + "</td>" +
+        "<td>" + escapeHtml(lastSeen) + "</td>";
+
+      body.appendChild(row);
+    }
+  } catch (error) {
+    body.innerHTML = '<tr><td colspan="6">Could not load devices.</td></tr>';
+    showMessage(error.message || "Could not load devices.");
+  }
+}
+
+$("refreshDevicesButton").addEventListener("click", loadDevices);
 
 $("refreshButton").addEventListener("click", async () => {
   clearMessage();
